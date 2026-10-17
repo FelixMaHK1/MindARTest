@@ -3,165 +3,229 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <meta charset="utf-8" />
-    <title>AR 虛擬道具收集</title>
+    <title>AR 虛擬道具收集大作戰</title>
     
+    <!-- 載入 A-Frame 與 MindAR -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <!-- 載入 Google Model Viewer -->
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"></script>
 
     <style>
-      body { margin: 0; overflow: hidden; font-family: sans-serif; touch-action: none; }
+      body { margin: 0; overflow: hidden; font-family: 'Helvetica Neue', Helvetica, 'Microsoft JhengHei', sans-serif; touch-action: none; }
       
+      /* 開始頁面與毛玻璃卡片設計 */
       #intro-screen {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: #1a2a3a; z-index: 9999; display: flex; justify-content: center; align-items: center;
-        color: white; transition: opacity 0.3s;
+        background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+        z-index: 9999; display: flex; justify-content: center; align-items: center;
+        color: white; transition: opacity 0.5s ease;
       }
-      .intro-card { background: rgba(255,255,255,0.1); padding: 30px; border-radius: 20px; text-align: center; }
-      .btn { background: #00e6ff; padding: 12px 24px; font-size: 18px; border-radius: 30px; border: none; font-weight: bold; margin-top: 15px; cursor: pointer;}
+      .intro-card {
+        background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.2); padding: 30px 25px; border-radius: 20px;
+        text-align: center; width: 85%; max-width: 350px; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+      }
+      .intro-card h1 { margin-top: 0; font-size: 24px; color: #00e6ff; letter-spacing: 1px; }
+      .intro-card p { font-size: 15px; line-height: 1.5; color: #e0e0e0; margin-bottom: 20px; }
       
+      /* 說明步驟排版 */
+      .steps { text-align: left; margin-bottom: 25px; background: rgba(0, 0, 0, 0.25); padding: 15px; border-radius: 12px; }
+      .steps div { margin-bottom: 12px; font-size: 14px; display: flex; align-items: flex-start; line-height: 1.4; }
+      .steps div:last-child { margin-bottom: 0; }
+      .steps span { font-size: 18px; margin-right: 10px; line-height: 1.1; }
+
+      .start-btn {
+        background: #00e6ff; color: #0f2027; border: none; padding: 14px 24px;
+        font-size: 16px; font-weight: bold; border-radius: 30px; cursor: pointer;
+        width: 100%; transition: transform 0.2s, background 0.2s;
+      }
+      .start-btn:hover { background: #00c4d9; transform: scale(1.05); }
+      .start-btn:active { transform: scale(0.95); }
+      
+      /* 懸浮 UI (背包按鈕與提示) */
       #ui-layer {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         pointer-events: none; z-index: 1000; display: none;
       }
-      
       #backpack-btn {
-        position: fixed; bottom: 80px; right: 20px;
+        position: fixed; bottom: 90px; right: 20px;
         background: #ffaa00; border: 3px solid white; border-radius: 50%;
         width: 65px; height: 65px; font-size: 28px; cursor: pointer;
         pointer-events: auto; display: flex; justify-content: center; align-items: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.6);
       }
-      
       #toast {
         position: fixed; top: 40px; left: 50%; transform: translateX(-50%);
-        background: #00ff00; color: black; padding: 10px 20px;
-        border-radius: 20px; font-weight: bold; display: none;
+        background: rgba(0,255,0,0.9); color: black; padding: 12px 24px;
+        border-radius: 30px; font-weight: bold; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
       }
 
+      /* 非 AR 背包/圖鑑頁面 */
       #inventory-screen {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: #111; z-index: 9000; display: none; color: white;
+        background: #1a1a1a; z-index: 9000; display: none; color: white;
         flex-direction: column; padding: 20px; box-sizing: border-box; overflow-y: auto;
       }
-      .item-icon { width: 70px; height: 70px; background: #333; border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 30px; margin-right: 15px; cursor: pointer;}
-      model-viewer { width: 100%; height: 350px; background: #222; border-radius: 15px; margin-top: 15px;}
+      .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+      .close-btn { background: #ff4444; color: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+      #item-list { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; }
+      .item-icon { width: 70px; height: 70px; background: #333; border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 30px; cursor: pointer; border: 3px solid transparent; flex-shrink: 0; }
+      .item-icon.active { border-color: #00e6ff; background: #444; }
+      #item-detail { flex-grow: 1; display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: 10px;}
+      model-viewer { width: 100%; height: 350px; background: #222; border-radius: 15px; margin-bottom: 15px; }
+      h2 { margin: 10px 0; color: #00e6ff; }
     </style>
 
     <script>
       let inventory = [];
       const itemDatabase = {
-        'item-01': { name: '能量方塊', icon: '🧊', desc: '神秘藍色能量。', modelSrc: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb' },
-        'item-02': { name: '生命寶珠', icon: '🔮', desc: '散發綠色光芒。', modelSrc: 'https://modelviewer.dev/shared-assets/models/shishkebab.glb' }
+        'item-01': {
+          id: 'item-01', name: '能量方塊', icon: '🧊',
+          description: '充滿神秘藍色能量的方塊，據說能提供無限電力。',
+          modelSrc: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb' 
+        },
+        'item-02': {
+          id: 'item-02', name: '生命寶珠', icon: '🔮',
+          description: '散發綠色光芒的圓球，點擊它的人會感到身心舒暢。',
+          modelSrc: 'https://modelviewer.dev/shared-assets/models/shishkebab.glb'
+        }
       };
 
-      // 終極觸控修正版 Component
+      // 註冊收集元件
       AFRAME.registerComponent('collectible', {
         schema: { itemId: { type: 'string' } },
         init: function () {
-          const collectItem = (e) => {
-            e.stopPropagation(); // 阻止事件重疊
+          this.el.addEventListener('click', (e) => {
             const id = this.data.itemId;
-            
             if (!inventory.includes(id)) {
               inventory.push(id);
-              
-              // 顯示提示
-              const toast = document.getElementById('toast');
-              toast.innerText = '獲得：' + itemDatabase[id].name;
-              toast.style.display = 'block';
-              setTimeout(() => toast.style.display = 'none', 2000);
-              
-              // 隱藏 3D 物件並移除點擊標籤
+              showToast('成功收集：' + itemDatabase[id].name + '！');
               this.el.setAttribute('visible', 'false');
               this.el.classList.remove('clickable');
+            } else {
+              showToast('這個道具已經收集過囉！');
             }
-          };
-
-          // 同時綁定 click 同 touchstart
-          this.el.addEventListener('mousedown', collectItem);
-          this.el.addEventListener('touchstart', collectItem);
+          });
         }
       });
 
       function startGame() {
-        document.getElementById('intro-screen').style.display = 'none';
-        document.getElementById('ui-layer').style.display = 'block';
+        document.getElementById('intro-screen').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('intro-screen').style.display = 'none';
+          document.getElementById('ui-layer').style.display = 'block';
+        }, 500);
+      }
+
+      function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.innerText = msg;
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 2500);
       }
 
       function openInventory() {
         document.getElementById('inventory-screen').style.display = 'flex';
+        renderInventory();
+      }
+
+      function closeInventory() {
+        document.getElementById('inventory-screen').style.display = 'none';
+      }
+
+      function renderInventory() {
         const listDiv = document.getElementById('item-list');
         const detailDiv = document.getElementById('item-detail');
         listDiv.innerHTML = '';
-        
-        if(inventory.length === 0) {
-          detailDiv.innerHTML = '<h3 style="color:#aaa; text-align:center;">背包係空的</h3>';
+
+        if (inventory.length === 0) {
+          detailDiv.innerHTML = '<h3 style="color:#aaa;">背包是空的</h3><p style="color:#888;">趕快去掃描現實中的目標尋找道具吧！</p>';
           return;
         }
 
         inventory.forEach(id => {
           const item = itemDatabase[id];
           const iconDiv = document.createElement('div');
-          iconDiv.className = 'item-icon'; iconDiv.innerText = item.icon;
-          iconDiv.onclick = () => {
-            detailDiv.innerHTML = `
-              <h2 style="color:#00e6ff; text-align:center;">${item.name}</h2>
-              <model-viewer src="${item.modelSrc}" auto-rotate camera-controls></model-viewer>
-              <p style="text-align:center;">${item.desc}</p>
-            `;
-          };
+          iconDiv.className = 'item-icon';
+          iconDiv.innerText = item.icon;
+          iconDiv.onclick = () => showDetail(item, iconDiv);
           listDiv.appendChild(iconDiv);
         });
-        
-        // 點擊第一個
-        listDiv.firstChild.click();
+        showDetail(itemDatabase[inventory[0]], listDiv.firstChild);
       }
 
-      function closeInventory() { document.getElementById('inventory-screen').style.display = 'none'; }
+      function showDetail(item, clickedDiv) {
+        document.querySelectorAll('.item-icon').forEach(el => el.classList.remove('active'));
+        if(clickedDiv) clickedDiv.classList.add('active');
+
+        const detailDiv = document.getElementById('item-detail');
+        detailDiv.innerHTML = `
+          <h2>${item.name}</h2>
+          <model-viewer src="${item.modelSrc}" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
+          <p>${item.description}</p>
+        `;
+      }
     </script>
   </head>
   
   <body>
+    <!-- 遊戲說明頁面 -->
     <div id="intro-screen">
       <div class="intro-card">
-        <h2>AR 收集戰</h2>
-        <button class="btn" onclick="startGame()">開始掃描</button>
+        <h1>AR 道具收集戰</h1>
+        <p>歡迎來到擴增實境世界！這是一場虛擬道具收集遊戲，請跟隨以下指示解鎖隱藏的寶物。</p>
+        <div class="steps">
+          <div><span>📷</span> 允許權限：點擊開始後，請允許網頁取用你的相機鏡頭。</div>
+          <div><span>🔍</span> 尋找目標：將鏡頭對準現實中的「特定圖案或卡片」進行掃描。</div>
+          <div><span>🎁</span> 收集道具：發現 3D 物品出現時，即可點擊將其登錄至你的圖鑑並查看詳細故事！</div>
+        </div>
+        <button class="start-btn" onclick="startGame()">準備好啦，開始掃描！</button>
       </div>
     </div>
 
+    <!-- 懸浮 UI -->
     <div id="ui-layer">
-      <div id="toast"></div>
+      <div id="toast">成功收集！</div>
       <div id="backpack-btn" onclick="openInventory()">🎒</div>
     </div>
 
+    <!-- 圖鑑頁面 -->
     <div id="inventory-screen">
-      <div style="display:flex; justify-content:space-between;">
-        <h2>圖鑑</h2>
-        <button onclick="closeInventory()" style="background:#f44; color:#fff; border:none; padding:10px; border-radius:10px;">返回</button>
+      <div class="header">
+        <h2 style="margin:0;">我的道具圖鑑</h2>
+        <button class="close-btn" onclick="closeInventory()">返回 AR</button>
       </div>
-      <div id="item-list" style="display:flex; overflow-x:auto; margin-top:10px;"></div>
+      <div id="item-list"></div>
       <div id="item-detail"></div>
     </div>
 
-    <!-- 加上 ?v=2 破解快取，加上 fuse: false 增強點擊判定 -->
+    <!-- AR 場景與點擊偵測 -->
     <a-scene 
-      mindar-image="imageTargetSrc: ./image/targets.mind?v=2; maxTrack: 2;" 
+      mindar-image="imageTargetSrc: ./image/targets.mind?v=4; maxTrack: 2;" 
       color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" 
-      vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false"
-      cursor="rayOrigin: mouse; fuse: false;" raycaster="objects: .clickable">
+      vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <!-- 相機：負責射出隱形光線以判定點擊 -->
+      <a-camera position="0 0 0" look-controls="enabled: false" 
+                cursor="fuse: false; rayOrigin: mouse;" 
+                raycaster="far: 10000; objects: .clickable">
+      </a-camera>
 
+      <!-- 目標 1 -->
       <a-entity mindar-image-target="targetIndex: 0">
         <a-box class="clickable" collectible="itemId: item-01" 
                position="0 0 0.25" scale="0.5 0.5 0.5" color="blue" 
-               animation="property: rotation; to: 0 360 0; loop: true; dur: 3000"></a-box>
+               animation="property: rotation; to: 0 360 0; loop: true; dur: 3000">
+        </a-box>
       </a-entity>
 
+      <!-- 目標 2 -->
       <a-entity mindar-image-target="targetIndex: 1">
         <a-sphere class="clickable" collectible="itemId: item-02" 
                   position="0 0 0.25" radius="0.3" color="green"
-                  animation="property: position; to: 0 0.2 0.25; dir: alternate; loop: true; dur: 1000"></a-sphere>
+                  animation="property: position; to: 0 0.2 0.25; dir: alternate; loop: true; dur: 1000">
+        </a-sphere>
       </a-entity>
     </a-scene>
   </body>
