@@ -3,19 +3,128 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta charset="utf-8" />
-    <title>我嘅第一個 Web AR</title>
+    <title>AR 虛擬道具收集大作戰</title>
     
     <!-- 1. 載入 A-Frame 核心庫 -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    
-    <!-- 2. 載入 MindAR 畀 A-Frame 用嘅擴充庫 -->
+    <!-- 2. 載入 MindAR 擴充庫 -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+    <!-- 現代化 UI 設計的 CSS -->
+    <style>
+      body { margin: 0; overflow: hidden; font-family: 'Helvetica Neue', Helvetica, Arial, 'Microsoft JhengHei', sans-serif; }
+      
+      /* 說明頁面全螢幕覆蓋 */
+      #intro-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+        z-index: 9999; /* 確保在 AR 畫面最上層 */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        transition: opacity 0.5s ease;
+      }
+
+      /* 現代毛玻璃卡片設計 */
+      .intro-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 40px 30px;
+        border-radius: 20px;
+        text-align: center;
+        max-width: 85%;
+        width: 350px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      }
+
+      .intro-card h1 {
+        margin-top: 0;
+        font-size: 24px;
+        letter-spacing: 2px;
+        color: #00e6ff;
+      }
+
+      .intro-card p {
+        font-size: 15px;
+        line-height: 1.6;
+        color: #e0e0e0;
+        margin-bottom: 25px;
+      }
+
+      /* 步驟列表設計 */
+      .steps {
+        text-align: left;
+        margin-bottom: 30px;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 15px 20px;
+        border-radius: 12px;
+      }
+
+      .steps div {
+        margin-bottom: 12px;
+        font-size: 14px;
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .steps div:last-child { margin-bottom: 0; }
+      .steps span { font-size: 18px; margin-right: 10px; line-height: 1.2; }
+
+      /* 按鈕設計 */
+      .start-btn {
+        background: #00e6ff;
+        color: #0f2027;
+        border: none;
+        padding: 14px 30px;
+        font-size: 16px;
+        font-weight: bold;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s;
+        width: 100%;
+      }
+
+      .start-btn:hover { background: #00c4d9; transform: scale(1.05); }
+      .start-btn:active { transform: scale(0.95); }
+    </style>
   </head>
   
-  <body style="margin: 0; overflow: hidden;">
-    <!-- 3. 設定 AR 場景 
-         imageTargetSrc: 指向你用來做辨識嘅 .mind 追蹤檔
-         呢度用咗 MindAR 官方提供嘅名片範例檔 -->
+  <body>
+    <!-- 遊戲說明頁面 (Intro Screen) -->
+    <div id="intro-screen">
+      <div class="intro-card">
+        <h1>AR 道具收集戰</h1>
+        <p>歡迎來到擴增實境世界！這是一場虛擬道具收集遊戲，請跟隨以下指示解鎖隱藏的寶物。</p>
+        
+        <div class="steps">
+          <div><span>📷</span> 允許權限：點擊開始後，請允許網頁取用你的相機鏡頭。</div>
+          <div><span>🔍</span> 尋找目標：將鏡頭對準現實中的「特定圖案或卡片」進行掃描。</div>
+          <div><span>🎁</span> 收集道具：發現 3D 物品出現時，即可將其登錄至你的圖鑑並查看詳細故事！</div>
+        </div>
+
+        <button class="start-btn" onclick="startGame()">準備好啦，開始掃描！</button>
+      </div>
+    </div>
+
+    <!-- JavaScript：處理點擊開始後的 UI 隱藏 -->
+    <script>
+      function startGame() {
+        const introScreen = document.getElementById('intro-screen');
+        introScreen.style.opacity = '0';
+        setTimeout(() => {
+          introScreen.style.display = 'none';
+        }, 500); // 等待淡出動畫結束後隱藏元素
+      }
+    </script>
+
+    <!-- 3. 設定 AR 場景 -->
     <a-scene 
       mindar-image="imageTargetSrc: ./image/targets.mind;" 
       color-space="sRGB" 
@@ -26,20 +135,15 @@
       <!-- 4. 設定相機 -->
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- 5. 設定追蹤目標
-           targetIndex: 0 代表對應 .mind 檔入面嘅第一張圖 -->
+      <!-- 5. 設定追蹤目標 -->
       <a-entity mindar-image-target="targetIndex: 0">
-        
-        <!-- 當鏡頭認到目標圖片時，就會顯示下面嘅物件 -->
-        
-        <!-- 放一個半透明嘅紅色平面 -->
+        <!-- 半透明的紅色平面 -->
         <a-plane position="0 0 0" height="1" width="1" color="red" opacity="0.5"></a-plane>
         
-        <!-- 放一個藍色立體方塊，並加上自轉動畫 -->
+        <!-- 藍色立體方塊 (作為收集道具的預設模型) -->
         <a-box position="0 0 0.25" scale="0.3 0.3 0.3" color="blue" 
                animation="property: rotation; to: 0 360 0; loop: true; dur: 3000">
         </a-box>
-
       </a-entity>
     </a-scene>
   </body>
