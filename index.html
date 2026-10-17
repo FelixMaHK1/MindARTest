@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <title>我嘅第一個 Web AR</title>
+    
+    <!-- 1. 載入 A-Frame 核心庫 -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    
+    <!-- 2. 載入 MindAR 畀 A-Frame 用嘅擴充庫 -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  </head>
+  
+  <body style="margin: 0; overflow: hidden;">
+    <!-- 3. 設定 AR 場景 
+         imageTargetSrc: 指向你用來做辨識嘅 .mind 追蹤檔
+         呢度用咗 MindAR 官方提供嘅名片範例檔 -->
+    <a-scene 
+      mindar-image="./image/targets.mind;" 
+      color-space="sRGB" 
+      renderer="colorManagement: true, physicallyCorrectLights" 
+      vr-mode-ui="enabled: false" 
+      device-orientation-permission-ui="enabled: false">
+      
+      <!-- 4. 設定相機 -->
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <!-- 5. 設定追蹤目標
+           targetIndex: 0 代表對應 .mind 檔入面嘅第一張圖 -->
+      <a-entity mindar-image-target="targetIndex: 0">
+        
+        <!-- 當鏡頭認到目標圖片時，就會顯示下面嘅物件 -->
+        
+        <!-- 放一個半透明嘅紅色平面 -->
+        <a-plane position="0 0 0" height="1" width="1" color="red" opacity="0.5"></a-plane>
+        
+        <!-- 放一個藍色立體方塊，並加上自轉動畫 -->
+        <a-box position="0 0 0.25" scale="0.3 0.3 0.3" color="blue" 
+               animation="property: rotation; to: 0 360 0; loop: true; dur: 3000">
+        </a-box>
+
+      </a-entity>
+    </a-scene>
+  </body>
+</html>
