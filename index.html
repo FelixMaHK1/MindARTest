@@ -207,7 +207,7 @@
       vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
       <a-assets>
-        <a-asset-item id="treasure-box-model" src="./models/Treasurebox.glb?v=9"></a-asset-item>
+        <a-asset-item id="treasure-box-model" src="./models/Treasurebox.glb?v=10"></a-asset-item>
       </a-assets>
 
       <!-- 相機：負責射出隱形光線以判定點擊 -->
@@ -217,10 +217,11 @@
       </a-camera>
 
       <!-- 目標 1 -->
-      <a-entity mindar-image-target="targetIndex: 0">
+      <<a-entity mindar-image-target="targetIndex: 0">
         <a-gltf-model src="#treasure-box-model" 
                       class="clickable" collectible="itemId: item-01" 
-                      position="0 0 0" scale="1 1 1" 
+                      position="0 0 0" 
+                      scale="0.1 0.1 0.1" 
                       animation="property: rotation; to: 0 360 0; loop: true; dur: 3000">
         </a-gltf-model>
       </a-entity>
