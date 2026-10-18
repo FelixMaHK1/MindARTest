@@ -81,9 +81,9 @@
       let inventory = [];
       const itemDatabase = {
         'item-01': {
-          id: 'item-01', name: '', icon: '📦',
+          id: 'item-01', name: '遠古寶箱', icon: '📦',
           description: '一個散發著古老氣息的木製寶箱，邊角鑲嵌著褪色的黃金。沉甸甸的箱子裡，似乎隱藏著遺失已久的珍貴寶物。',
-          modelSrc: './models/treasurebox.glb' 
+          modelSrc: './models/treasurebox.glb?v=2' 
         },
         'item-02': {
           id: 'item-02', name: '生命寶珠', icon: '🔮',
@@ -202,7 +202,7 @@
 
     <!-- AR 場景與點擊偵測 -->
     <a-scene 
-      mindar-image="imageTargetSrc: ./image/targets.mind?v=5; maxTrack: 2;" 
+      mindar-image="imageTargetSrc: ./image/targets.mind?v=6; maxTrack: 2;" 
       color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" 
       vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
