@@ -81,9 +81,9 @@
       let inventory = [];
       const itemDatabase = {
         'item-01': {
-          id: 'item-01', name: '能量方塊', icon: '🧊',
-          description: '充滿神秘藍色能量的方塊，據說能提供無限電力。',
-          modelSrc: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb' 
+          id: 'item-01', name: '', icon: '📦',
+          description: '一個散發著古老氣息的木製寶箱，邊角鑲嵌著褪色的黃金。沉甸甸的箱子裡，似乎隱藏著遺失已久的珍貴寶物。',
+          modelSrc: './models/treasurebox.glb' 
         },
         'item-02': {
           id: 'item-02', name: '生命寶珠', icon: '🔮',
@@ -202,7 +202,7 @@
 
     <!-- AR 場景與點擊偵測 -->
     <a-scene 
-      mindar-image="imageTargetSrc: ./image/targets.mind?v=4; maxTrack: 2;" 
+      mindar-image="imageTargetSrc: ./image/targets.mind?v=5; maxTrack: 2;" 
       color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" 
       vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
@@ -214,10 +214,11 @@
 
       <!-- 目標 1 -->
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-box class="clickable" collectible="itemId: item-01" 
-               position="0 0 0.25" scale="0.5 0.5 0.5" color="blue" 
-               animation="property: rotation; to: 0 360 0; loop: true; dur: 3000">
-        </a-box>
+        <a-gltf-model src="#treasure-box-model" 
+                      class="clickable" collectible="itemId: item-01" 
+                      position="0 0 0" scale="0.1 0.1 0.1" 
+                      animation="property: rotation; to: 0 360 0; loop: true; dur: 3000">
+        </a-gltf-model>
       </a-entity>
 
       <!-- 目標 2 -->
