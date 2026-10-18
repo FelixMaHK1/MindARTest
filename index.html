@@ -83,12 +83,12 @@
         'item-01': {
           id: 'item-01', name: '遠古寶箱', icon: '📦',
           description: '一個散發著古老氣息的木製寶箱，邊角鑲嵌著褪色的黃金。沉甸甸的箱子裡，似乎隱藏著遺失已久的珍貴寶物。',
-          modelSrc: './models/Treasurebox.glb?v=9' 
+          modelSrc: './models/Treasurebox.glb?v=11' 
         },
         'item-02': {
-          id: 'item-02', name: '生命寶珠', icon: '🔮',
-          description: '散發綠色光芒的圓球，點擊它的人會感到身心舒暢。',
-          modelSrc: 'https://modelviewer.dev/shared-assets/models/shishkebab.glb'
+          id: 'item-02', name: '防空洞殘蠟', icon: '🕯️',
+          description: '這根半截蠟燭曾在戰火肆虐的時期，陪伴防空洞裡的難民度過無數個黑暗且不安的夜晚。斑駁的燭身見證了那段艱難的歲月。',
+          modelSrc: './models/candle.glb?v=1'
         }
       };
 
@@ -202,12 +202,14 @@
 
     <!-- AR 場景與點擊偵測 -->
     <a-scene 
-      mindar-image="imageTargetSrc: ./image/targets.mind?v=9; maxTrack: 2;" 
+      mindar-image="imageTargetSrc: ./image/targets.mind?v=11; maxTrack: 2;" 
       color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" 
       vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
+      <!-- 預載入兩個 3D 模型 -->
       <a-assets>
-        <a-asset-item id="treasure-box-model" src="./models/Treasurebox.glb?v=10"></a-asset-item>
+        <a-asset-item id="treasure-box-model" src="./models/Treasurebox.glb?v=11"></a-asset-item>
+        <a-asset-item id="candle-model" src="./models/candle.glb?v=1"></a-asset-item>
       </a-assets>
 
       <!-- 相機：負責射出隱形光線以判定點擊 -->
@@ -216,26 +218,26 @@
                 raycaster="far: 10000; objects: .clickable">
       </a-camera>
 
+      <!-- 增加環境光源，讓寶箱和蠟燭有立體感 -->
       <a-light type="ambient" color="#FFFFFF" intensity="1.2"></a-light>
-      <!-- 加入方向光（製造立體感與亮暗面） -->
       <a-light type="directional" color="#FFF5E6" intensity="1.5" position="-1 2 1"></a-light>
 
-      <!-- 目標 1 -->
-      <<a-entity mindar-image-target="targetIndex: 0">
+      <!-- 目標 1：寶箱 -->
+      <a-entity mindar-image-target="targetIndex: 0">
         <a-gltf-model src="#treasure-box-model" 
                       class="clickable" collectible="itemId: item-01" 
-                      position="0 0 0" 
-                      scale="0.1 0.1 0.1" 
+                      position="0 0 0" scale="0.1 0.1 0.1" 
                       animation="property: rotation; to: 0 360 0; loop: true; dur: 3000">
         </a-gltf-model>
       </a-entity>
 
-      <!-- 目標 2 -->
+      <!-- 目標 2：地窖蠟燭 -->
       <a-entity mindar-image-target="targetIndex: 1">
-        <a-sphere class="clickable" collectible="itemId: item-02" 
-                  position="0 0 0.25" radius="0.3" color="green"
-                  animation="property: position; to: 0 0.2 0.25; dir: alternate; loop: true; dur: 1000">
-        </a-sphere>
+        <a-gltf-model src="#candle-model" 
+                      class="clickable" collectible="itemId: item-02" 
+                      position="0 0 0" scale="0.1 0.1 0.1" 
+                      animation="property: position; to: 0 0.05 0; dir: alternate; loop: true; dur: 1500">
+        </a-gltf-model>
       </a-entity>
     </a-scene>
   </body>
